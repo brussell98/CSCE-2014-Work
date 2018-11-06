@@ -242,25 +242,19 @@ void Linkedlist::insert(unsigned int pos, const int &x) {
 	while (i++ < pos && currentOccupant->next)
 		currentOccupant = currentOccupant->next;
 
-	if (i - 1 < pos) { // If inserting past the end
+	if (currentOccupant == tail || i - 1 < pos) { // If inserting at or past end
 		Node* n = new Node();
 		n->value = x;
 		n->prev = currentOccupant;
 		currentOccupant->next = n;
 		tail = n;
-	} else if (currentOccupant == head) {
+	} else {
 		Node* n = new Node();
 		n->value = x;
-		n->next = currentOccupant;
-		currentOccupant->prev = n;
-		head = n;
-	} else { // Inserting at non-edge location
-		Node* n = new Node();
-		n->value = x;
-		n->prev = currentOccupant->prev;
-		n->prev->next = n;
-		n->next = currentOccupant;
-		currentOccupant->prev = n;
+		n->prev = currentOccupant;
+		n->next = currentOccupant->next;
+		currentOccupant->next = n;
+		n->next->prev = n;
 	}
 }
 

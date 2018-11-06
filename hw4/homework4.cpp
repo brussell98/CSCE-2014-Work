@@ -77,8 +77,8 @@ int main() {
 	cout << "Insert past end:" << endl;
 	list.insert(6, 99);
 	list.check();
-	cout << "Insert at head:" << endl;
-	list.insert(0, 98);
+	cout << "Insert at tail:" << endl;
+	list.insert(5, 98);
 	list.check();
 	cout << endl;
 
