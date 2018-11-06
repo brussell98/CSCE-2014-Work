@@ -1,9 +1,17 @@
+/*
+ * Author: Brandon Russell
+ * Assignment: Homework #4
+ * Due Date: Novermber 6, 2018
+ *
+ * Implements a linked list similar to the std::list
+*/
+
 #pragma once
 
 class Linkedlist {
 public:
-	typedef element_type &reference;
-	typedef const element_type &const_reference;
+	typedef int &reference;
+	typedef const int &const_reference;
 	Linkedlist(); //default constructor for empty list
 	~Linkedlist(); //destructor to free nodes dynamically created to support the linklist
 	bool empty() const;
@@ -15,8 +23,8 @@ public:
 	Linkedlist& operator=(const Linkedlist& l);
 	void pop_back();
 	void pop_front();
-	void push_back(const element_type &x);
-	void push_front(const element_type &x);
+	void push_back(const int &x);
+	void push_front(const int &x);
 	void sort();
 	// constructor that initializes the linked list with n nodes,
 	// with elem value from 0 to n-1
@@ -31,7 +39,7 @@ public:
 	// specified by pos. The first node has position 0.
 	// if the number of nodes in the linked list is less than
 	// pos, the node is inserted at the end.
-	void insert(unsigned int pos, const element_type &x);
+	void insert(unsigned int pos, const int &x);
 	// remove the node specified by pos.
 	// if the number of nodes in the linked list is less than
 	// pos, the node at the end if any is removed.
@@ -39,7 +47,7 @@ public:
 
 private:
 	struct Node {
-		element_type value;
+		int value;
 		Node* prev;
 		Node* next;
 	};
