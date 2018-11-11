@@ -10,7 +10,10 @@
 #include <iostream>
 #include "Linkedlist.h"
 
-Linkedlist::Linkedlist() { }
+Linkedlist::Linkedlist() {
+	head = NULL;
+	tail = NULL;
+}
 
 Linkedlist::~Linkedlist() {
 	clear();
