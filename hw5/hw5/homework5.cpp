@@ -4,6 +4,20 @@
 
 using namespace std;
 
+void parseExpressions(string &input, Expression &exp) {
+	size_t pos = 0;
+	while ((pos = input.find(';')) != string::npos) {
+		if (pos == 0) {
+			input.erase(0, 1);
+			continue;
+		}
+
+		// TODO: ExpressionSequence class to handle multiple expressions
+		exp.set(input.substr(0, pos));
+		input.erase(0, pos + 1);
+	}
+}
+
 int main() {
 	string input;
 	string cmd;
@@ -12,7 +26,7 @@ int main() {
 	cout << "input: ";
 	getline(cin, input);
 
-	exp.set(input);
+	parseExpressions(input, exp);
 
 	while (true) {
 		cout << endl << "action: ";
@@ -41,8 +55,10 @@ int main() {
 			cout << "Not implemented" << endl;
 		else if (cmd == "f")
 			cout << "Not implemented" << endl;
+		else if (cmd == "=")
+			cout << "Not implemented" << endl;
 		else
-			cout << "Invalid action" << endl;
+			cout << "Invalid action" << endl << "Valid commands: =, <, >, f, c, s, q" << endl;
 	}
 
 	return 0;
