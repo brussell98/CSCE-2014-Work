@@ -19,6 +19,7 @@ public:
 	vector<Token> get_tokenized() const {
 		return tokenized;
 	}
+	void printPostfix();
 private:
 	string original;
 	vector<Token> tokenized;
@@ -26,4 +27,5 @@ private:
 	bool valid;
 	Exp_type type;
 	void validate();
+	void generatePostfix();
 };

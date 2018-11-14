@@ -6,6 +6,7 @@
 */
 
 #include <iostream>
+#include <stack>
 #include "Expression.h"
 
 string typeToString(Exp_type t) {
@@ -95,6 +96,38 @@ void Expression::validate() {
 	}
 }
 
+void Expression::generatePostfix() {
+	stack<Token> opStack;
+
+	for (int i = 0; i < tokenized.size(); i++) {
+		Token t = tokenized[i];
+		if (t.get_type() == INT || t.get_type() == ID)
+			postfix.push_back(t);
+		else if (t.get_type() == OpenBrace)
+			opStack.push(t);
+		else if (t.get_type() == CloseBrace) {
+			while (opStack.top().get_type() != OpenBrace) {
+				postfix.push_back(opStack.top());
+				opStack.pop();
+			}
+
+			opStack.pop(); // Remove open parenthesis
+		} else {
+			while (opStack.size() != 0 && opStack.top().get_priority() >= t.get_priority()) {
+				postfix.push_back(opStack.top());
+				opStack.pop();
+			}
+
+			opStack.push(t);
+		}
+	}
+
+	while (opStack.size() != 0) {
+		postfix.push_back(opStack.top());
+		opStack.pop();
+	}
+}
+
 void Expression::set(const string &s) {
 	original = s;
 	tokenized.clear(); // Remove old tokens
@@ -123,6 +156,8 @@ void Expression::set(const string &s) {
 	}
 
 	validate();
+	if (valid)
+		generatePostfix();
 }
 
 void Expression::display() const {
@@ -130,12 +165,25 @@ void Expression::display() const {
 
 	cout << "tokenized = ";
 	for (int i = 0; i < (int)tokenized.size(); i++)
-		cout << tokenized.at(i).get_token() << ";";
+		cout << tokenized.at(i).get_token() << ' ';
 
-	cout << "\npostfix = ";
+	cout << endl << "postfix = ";
 	for (int i = 0; i < (int)postfix.size(); i++)
-		cout << postfix.at(i).get_token() << ";";
+		cout << postfix.at(i).get_token() << ' ';
 
-	cout << "\nvalid = " << valid << endl;
+	cout << endl << "valid = " << valid << endl;
 	cout << "type = " << typeToString(type) << endl;
+}
+
+void Expression::printPostfix() {
+	if (type == assignment) {
+		cout << "No postfix of " << original << " because it is an assignment expression." << endl;
+		return; // Hide postfix for assignment expressions for some reason
+	}
+
+	cout << "Postfix of " << original << ':';
+	for (int i = 0; i < postfix.size(); i++)
+		cout << ' ' << postfix.at(i).get_token();
+
+	cout << endl;
 }
