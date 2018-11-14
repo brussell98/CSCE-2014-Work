@@ -124,6 +124,7 @@
   <ItemGroup>
     <ClCompile Include="Expression.cpp" />
     <ClCompile Include="homework5.cpp" />
+    <ClCompile Include="Sequence.cpp" />
     <ClCompile Include="Token.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

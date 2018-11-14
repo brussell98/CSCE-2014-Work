@@ -30,6 +30,71 @@ Expression::Expression(const string &s) {
 	set(s);
 }
 
+void Expression::validate() {
+	if (tokenized.size() == 0) {
+		valid = false;
+		return;
+	}
+
+	valid = true;
+	enum States { operand, func, done };
+	bool isAssignment = false; // Expression contains an =
+	States state = operand;
+	int level = 0; // Current parenthesis level
+	vector<Token>::iterator token = tokenized.begin();
+
+	do {
+		switch (state) {
+			case operand:
+				if ((*token).get_type() == OpenBrace)
+					level++;
+				else if ((*token).get_type() == INT || (*token).get_type() == ID)
+					state = func; // If token is an int or variable, expect an operator next
+				else {
+					valid = false;
+					state = done;
+				}
+				break;
+
+			case func:
+				if ((*token).get_type() == CloseBrace) {
+					level--;
+					if (level < 0) {
+						valid = false;
+						state = done;
+					}
+				} else if ((*token).get_type() == EQ) {
+					isAssignment = true;
+					state = operand;
+				} else if ((*token).get_type() == OP)
+					state = operand; // If token is an operator, expect an operand next
+				else {
+					valid = false;
+					state = done;
+				}
+				break;
+
+			default:
+				break;
+		}
+	} while (state != done && ++token != tokenized.end());
+
+	if (level != 0) // Un-balanced parenthesis
+		valid = false;
+	if (state = operand) // Ended with an operator
+		valid = false;
+
+	if (valid) {
+		if (isAssignment) {
+			if (tokenized.size() == 3 && tokenized[0].get_type() == ID && tokenized[2].get_type() == INT)
+				type = assignment;
+			else
+				valid = false;
+		} else
+			type = arithmetic;
+	}
+}
+
 void Expression::set(const string &s) {
 	original = s;
 	tokenized.clear(); // Remove old tokens
@@ -56,6 +121,8 @@ void Expression::set(const string &s) {
 
 		i++;
 	}
+
+	validate();
 }
 
 void Expression::display() const {

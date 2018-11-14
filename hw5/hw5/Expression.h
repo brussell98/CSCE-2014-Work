@@ -25,4 +25,5 @@ private:
 	vector<Token> postfix;
 	bool valid;
 	Exp_type type;
+	void validate();
 };

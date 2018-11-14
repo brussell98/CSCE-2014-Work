@@ -42,15 +42,20 @@ void Token::set(string s) {
 	token = s;
 	priority = -1;
 
-	if (s == "=")
+	if (s == "=") {
 		type = EQ;
-	else if (s == "(")
+		priority = 0;
+	} else if (s == "(")
 		type = OpenBrace;
 	else if (s == ")")
 		type = CloseBrace;
-	else if (s == "+" || s == "-" || s == "*" || s == "/" || s == "%")
+	else if (s == "+" || s == "-" || s == "*" || s == "/" || s == "%") {
 		type = OP;
-	else {
+		if (s == "+" || s == "-" || s == "%")
+			priority = 1;
+		else
+			priority = 2;
+	} else {
 		// First, check if any characters are not alphanumeric. If so, it is invalid
 		// Also check if the token contains only numbers
 		bool invalid = false;
