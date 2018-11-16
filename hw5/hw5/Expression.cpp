@@ -187,3 +187,26 @@ void Expression::printPostfix() {
 
 	cout << endl;
 }
+
+void Expression::printParenthesized() {
+	if (type == assignment) {
+		cout << "No parenthesized version of " << original << " because it is an assignment expression." << endl;
+		return; // Hide for assignment expressions for some reason
+	}
+
+	stack<string> st;
+
+	for (int i = 0; i < postfix.size(); i++) {
+		if (postfix[i].get_type() == INT || postfix[i].get_type() == ID)
+			st.push(postfix[i].get_token());
+		else {
+			string op1 = st.top();
+			st.pop();
+			string op2 = st.top();
+			st.pop();
+			st.push('(' + op2 + postfix[i].get_token() + op1 + ')');
+		}
+	}
+
+	cout << "Fully parenthesized version of " << original << " is: " << st.top();
+}

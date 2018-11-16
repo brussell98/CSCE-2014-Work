@@ -40,7 +40,8 @@ int main() {
 		else if (cmd == ">")
 			cout << "Not implemented" << endl;
 		else if (cmd == "f")
-			cout << "Not implemented" << endl;
+			for (int i = 0; i < seq.size(); i++)
+				seq[i].printParenthesized();
 		else if (cmd == "=")
 			cout << "Not implemented" << endl;
 		else

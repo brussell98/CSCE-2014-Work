@@ -20,6 +20,7 @@ public:
 		return tokenized;
 	}
 	void printPostfix();
+	void printParenthesized();
 private:
 	string original;
 	vector<Token> tokenized;
