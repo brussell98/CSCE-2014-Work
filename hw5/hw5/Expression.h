@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <map>
 #include "Token.h"
 
 using namespace std;
@@ -19,6 +20,9 @@ public:
 	vector<Token> get_tokenized() const {
 		return tokenized;
 	}
+	bool isValid();
+	Exp_type getType();
+	int evaluate(map<string, int> &vars);
 	void printPostfix();
 	void printParenthesized();
 private:

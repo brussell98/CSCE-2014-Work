@@ -175,7 +175,56 @@ void Expression::display() const {
 	cout << "type = " << typeToString(type) << endl;
 }
 
+bool Expression::isValid() {
+	return valid;
+}
+
+Exp_type Expression::getType() {
+	return type;
+}
+
+int Expression::evaluate(map<string, int> &vars) {
+	if (type == assignment) {
+		vars[tokenized[0].get_token()] = tokenized[2].value();
+		return tokenized[2].value();
+	}
+
+	stack<int> operands;
+	for (int i = 0; i < postfix.size(); i++) {
+		Token token = postfix[i];
+		if (token.get_type() == INT)
+			operands.push(token.value());
+		else if (token.get_type() == ID)
+			operands.push(vars[token.get_token()]);
+		else {
+			int val1 = operands.top();
+			operands.pop();
+			int val2 = operands.top();
+			operands.pop();
+
+			string op = postfix[i].get_token();
+			if (op == "+")
+				operands.push(val1 + val2);
+			else if (op == "-")
+				operands.push(val1 - val2);
+			else if (op == "*")
+				operands.push(val1 * val2);
+			else if (op == "/")
+				operands.push(val1 / val2);
+			else if (op == "%")
+				operands.push(val1 % val2);
+		}
+	}
+
+	return operands.top();
+}
+
 void Expression::printPostfix() {
+	if (!valid) {
+		cout << "No postfix version of " << original << " because it is not a valid expression." << endl;
+		return;
+	}
+
 	if (type == assignment) {
 		cout << "No postfix of " << original << " because it is an assignment expression." << endl;
 		return; // Hide postfix for assignment expressions for some reason
@@ -189,6 +238,11 @@ void Expression::printPostfix() {
 }
 
 void Expression::printParenthesized() {
+	if (!valid) {
+		cout << "No parenthesized version of " << original << " because it is not a valid expression." << endl;
+		return;
+	}
+
 	if (type == assignment) {
 		cout << "No parenthesized version of " << original << " because it is an assignment expression." << endl;
 		return; // Hide for assignment expressions for some reason

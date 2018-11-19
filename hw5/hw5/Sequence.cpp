@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+#include <iostream>
 #include "Expression.h"
 
 using namespace std;
@@ -25,6 +26,21 @@ public:
 
 			exps.push_back(Expression(input.substr(0, pos)));
 			input.erase(0, pos + 1);
+		}
+	}
+
+	void evaluate() {
+		map<string, int> vars;
+		for (int i = 0; i < exps.size(); i++) {
+			if (!exps[i].isValid())
+				cout << exps[i].get_original() << " is not a valid expression" << endl;
+			else if (exps[i].getType() == assignment) {
+				int val = exps[i].evaluate(vars);
+				cout << "Variable " << exps[i].get_tokenized()[0].get_token() << " set to " << val << endl;
+			} else {
+				int val = exps[i].evaluate(vars);
+				cout << exps[i].get_original() << " = " << val << endl;
+			}
 		}
 	}
 

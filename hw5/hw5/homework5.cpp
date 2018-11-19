@@ -43,7 +43,7 @@ int main() {
 			for (int i = 0; i < seq.size(); i++)
 				seq[i].printParenthesized();
 		else if (cmd == "=")
-			cout << "Not implemented" << endl;
+			seq.evaluate();
 		else
 			cout << "Invalid action" << endl << "Valid commands: =, <, >, f, c, s, q" << endl;
 	}
