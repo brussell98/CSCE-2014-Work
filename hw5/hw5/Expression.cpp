@@ -23,6 +23,8 @@ string typeToString(Exp_type t) {
 Expression::Expression() {
 	original = string();
 	tokenized = vector<Token>();
+	postfix = vector<Token>();
+	prefix = vector<Token>();
 	valid = false;
 	type = illegal;
 }
@@ -128,9 +130,45 @@ void Expression::generatePostfix() {
 	}
 }
 
+// Maybe try re-building the postfix into a fully-parenthesized infix expression
+// then moving the operators to their open parenthesis
+void Expression::generatePrefix() {
+	stack<Token> opStack;
+
+	for (int i = 0; i < tokenized.size(); i++) {
+		Token t = tokenized[i];
+		if (t.get_type() == INT || t.get_type() == ID)
+			opStack.push(t);
+		else if (t.get_type() == OpenBrace)
+			opStack.push(t);
+		else if (t.get_type() == CloseBrace) {
+			while (opStack.top().get_type() != OpenBrace) {
+				prefix.push_back(opStack.top());
+				opStack.pop();
+			}
+
+			opStack.pop(); // Remove open parenthesis
+		} else { // Operator
+			prefix.push_back(t);
+
+			while (!opStack.empty() && opStack.top().get_type() == OpenBrace) {
+				prefix.push_back(opStack.top());
+				opStack.pop();
+			}
+		}
+	}
+
+	while (opStack.size() != 0) {
+		prefix.push_back(opStack.top());
+		opStack.pop();
+	}
+}
+
 void Expression::set(const string &s) {
 	original = s;
 	tokenized.clear(); // Remove old tokens
+	postfix.clear();
+	prefix.clear();
 	valid = false;
 	type = illegal;
 
@@ -156,8 +194,10 @@ void Expression::set(const string &s) {
 	}
 
 	validate();
-	if (valid)
+	if (valid) {
 		generatePostfix();
+		generatePrefix();
+	}
 }
 
 void Expression::display() const {
@@ -233,6 +273,24 @@ void Expression::printPostfix() {
 	cout << "Postfix of " << original << ':';
 	for (int i = 0; i < postfix.size(); i++)
 		cout << ' ' << postfix.at(i).get_token();
+
+	cout << endl;
+}
+
+void Expression::printPrefix() {
+	if (!valid) {
+		cout << "No prefix version of " << original << " because it is not a valid expression." << endl;
+		return;
+	}
+
+	if (type == assignment) {
+		cout << "No prefix of " << original << " because it is an assignment expression." << endl;
+		return; // Hide postfix for assignment expressions for some reason
+	}
+
+	cout << "Prefix of " << original << ':';
+	for (int i = 0; i < prefix.size(); i++)
+		cout << ' ' << prefix.at(i).get_token();
 
 	cout << endl;
 }

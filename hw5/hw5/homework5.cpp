@@ -38,7 +38,8 @@ int main() {
 			for (int i = 0; i < seq.size(); i++)
 				seq[i].printPostfix();
 		else if (cmd == ">")
-			cout << "Not implemented" << endl;
+			for (int i = 0; i < seq.size(); i++)
+				seq[i].printPrefix();
 		else if (cmd == "f")
 			for (int i = 0; i < seq.size(); i++)
 				seq[i].printParenthesized();

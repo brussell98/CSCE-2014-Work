@@ -24,13 +24,16 @@ public:
 	Exp_type getType();
 	int evaluate(map<string, int> &vars);
 	void printPostfix();
+	void printPrefix();
 	void printParenthesized();
 private:
 	string original;
 	vector<Token> tokenized;
 	vector<Token> postfix;
+	vector<Token> prefix;
 	bool valid;
 	Exp_type type;
 	void validate();
 	void generatePostfix();
+	void generatePrefix();
 };
