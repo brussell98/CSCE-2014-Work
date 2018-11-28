@@ -1,3 +1,11 @@
+/*
+ * CSCE 2014 HW #5
+ * Author: Brandon Russell
+ *
+ * Parses an expression into a series of tokens
+ * Generates postfix and prefix notations, and evaluates the result
+*/
+
 #pragma once
 #include <string>
 #include <vector>

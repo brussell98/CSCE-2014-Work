@@ -1,3 +1,11 @@
+/*
+ * CSCE 2014 HW #5
+ * Author: Brandon Russell
+ *
+ * An expression evaulation console application
+ * Supports 5 left-associative operators and simple variables
+*/
+
 #include <iostream>
 #include <string>
 #include "Sequence.cpp"
@@ -18,10 +26,7 @@ int main() {
 		cout << endl << "action: ";
 		getline(cin, cmd);
 
-		if (cmd == "debug") {
-			for (int i = 0; i < seq.size(); i++)
-				seq[i].display();
-		} else if (cmd == "q")
+		if (cmd == "q")
 			return 0;
 		else if (cmd == "c") {
 			cout << "input: ";

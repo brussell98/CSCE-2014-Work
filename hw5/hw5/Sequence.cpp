@@ -1,3 +1,10 @@
+/*
+ * CSCE 2014 HW #5
+ * Author: Brandon Russell
+ *
+ * Handles a sequence of expressions, as well as evaluation of the sequence
+*/
+
 #include <vector>
 #include <string>
 #include <iostream>

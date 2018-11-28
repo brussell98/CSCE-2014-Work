@@ -3,6 +3,7 @@
  * Author: Brandon Russell
  *
  * Parses an expression into a series of tokens
+ * Generates postfix and prefix notations, and evaluates the result
 */
 
 #include <iostream>
@@ -43,55 +44,49 @@ void Expression::validate() {
 	}
 
 	valid = true;
-	enum States { operand, func, done };
+	enum States { operand, func };
 	bool isAssignment = false; // Expression contains an =
 	States state = operand;
 	int level = 0; // Current parenthesis level
 	vector<Token>::iterator token = tokenized.begin();
 
-	do {
+	do { // Expect to alternate between operators and operands
 		switch (state) {
 			case operand:
 				if ((*token).get_type() == OpenBrace)
 					level++;
 				else if ((*token).get_type() == INT || (*token).get_type() == ID)
 					state = func; // If token is an int or variable, expect an operator next
-				else {
+				else // Unexpected token
 					valid = false;
-					state = done;
-				}
 				break;
 
 			case func:
 				if ((*token).get_type() == CloseBrace) {
 					level--;
-					if (level < 0) {
+					if (level < 0) // If unmatched close parenthesis
 						valid = false;
-						state = done;
-					}
 				} else if ((*token).get_type() == EQ) {
 					isAssignment = true;
 					state = operand;
 				} else if ((*token).get_type() == OP)
 					state = operand; // If token is an operator, expect an operand next
-				else {
+				else
 					valid = false;
-					state = done;
-				}
 				break;
 
 			default:
 				break;
 		}
-	} while (state != done && ++token != tokenized.end());
+	} while (valid && ++token != tokenized.end());
 
 	if (level != 0) // Un-balanced parenthesis
 		valid = false;
 	if (state = operand) // Ended with an operator
 		valid = false;
 
-	if (valid) {
-		if (isAssignment) {
+	if (valid) { // Set expression type
+		if (isAssignment) { // Assignment can not evaluate, so it must have 3 tokens
 			if (tokenized.size() == 3 && tokenized[0].get_type() == ID && tokenized[2].get_type() == INT)
 				type = assignment;
 			else
@@ -101,6 +96,7 @@ void Expression::validate() {
 	}
 }
 
+// Helper classes to make pop() return the removed value
 template<class T>
 T popStack(stack<T> &st) {
 	T val = st.top();
@@ -118,6 +114,7 @@ T popQueue(queue<T> &q) {
 void Expression::generatePostfix() {
 	stack<Token> opStack;
 
+	// Using a shunting-yard algorithm
 	for (int i = 0; i < tokenized.size(); i++) {
 		Token t = tokenized[i];
 		if (t.get_type() == INT || t.get_type() == ID)
@@ -125,11 +122,13 @@ void Expression::generatePostfix() {
 		else if (t.get_type() == OpenBrace)
 			opStack.push(t);
 		else if (t.get_type() == CloseBrace) {
+			// Push all of the operators in the stack until the open paren is found
 			while (!opStack.empty() && opStack.top().get_type() != OpenBrace)
 				postfix.push_back(popStack(opStack));
 
 			opStack.pop(); // Remove open parenthesis
 		} else { // Operator
+			// Push all operators from the stack with equal or higher precedence until an open paren is found
 			while (!opStack.empty() && opStack.top().get_type() != OpenBrace && opStack.top().get_priority() >= t.get_priority())
 				postfix.push_back(popStack(opStack));
 
@@ -137,7 +136,7 @@ void Expression::generatePostfix() {
 		}
 	}
 
-	while (!opStack.empty())
+	while (!opStack.empty()) // Push remaining operators
 		postfix.push_back(popStack(opStack));
 }
 
@@ -145,30 +144,33 @@ void Expression::generatePrefix() {
 	queue<Token> q;
 	stack<Token> ops;
 
+	// Using a reverse shunting-yard algorithm
 	for (int i = (int)tokenized.size() - 1; i >= 0; i--) {
 		Token t = tokenized[i];
 		if (t.get_type() == INT || t.get_type() == ID)
 			q.push(t);
 		else if (t.get_type() == OP) {
+			// Push all operators with equal or higher precedence until a close paren is found
 			while (!ops.empty() && ops.top().get_priority() >= t.get_priority() && ops.top().get_type() != CloseBrace)
 				q.push(popStack(ops));
 			ops.push(t);
 		} else if (t.get_type() == CloseBrace)
 			ops.push(t);
 		else if (t.get_type() == OpenBrace) {
+			// Push all operators until a close paren is found
 			while (ops.top().get_type() != CloseBrace)
 				q.push(popStack(ops));
 			ops.pop(); // Remove the right bracket
 		}
 	}
 
-	while (!ops.empty())
+	while (!ops.empty()) // Push remaining operators
 		q.push(popStack(ops));
 
-	while (!q.empty())
+	while (!q.empty()) // Push the queue to the prefix vector
 		prefix.push_back(popQueue(q));
 
-	reverse(prefix.begin(), prefix.end());
+	reverse(prefix.begin(), prefix.end()); // Queue needed to become a stack, so we reverse the vector
 }
 
 void Expression::set(const string &s) {
@@ -231,12 +233,14 @@ Exp_type Expression::getType() {
 }
 
 int Expression::evaluate(map<string, int> &vars) {
-	if (type == assignment) {
+	if (type == assignment) { // Set the variable to the given value, return that value
 		vars[tokenized[0].get_token()] = tokenized[2].value();
 		return tokenized[2].value();
 	}
 
 	stack<int> operands;
+	// Evaluate using the postfix vector
+	// When an operator is found, get the top two operands from the stack and evaulate
 	for (int i = 0; i < postfix.size(); i++) {
 		Token token = postfix[i];
 		if (token.get_type() == INT)
@@ -246,7 +250,7 @@ int Expression::evaluate(map<string, int> &vars) {
 				throw runtime_error("Undefined variable referenced in expression");
 
 			operands.push(vars[token.get_token()]);
-		} else {
+		} else { // Right operand is at the top, so get it first
 			int val2 = popStack(operands);
 			int val1 = popStack(operands);
 
@@ -264,7 +268,7 @@ int Expression::evaluate(map<string, int> &vars) {
 		}
 	}
 
-	return operands.top();
+	return operands.top(); // Top is the result
 }
 
 void Expression::printPostfix() {
@@ -315,7 +319,7 @@ void Expression::printParenthesized() {
 	}
 
 	stack<string> st;
-
+	// Rebuild from postfix notation, similar logic to evaluate()
 	for (int i = 0; i < postfix.size(); i++) {
 		if (postfix[i].get_type() == INT || postfix[i].get_type() == ID)
 			st.push(postfix[i].get_token());

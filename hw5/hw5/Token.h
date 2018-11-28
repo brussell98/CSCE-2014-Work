@@ -1,3 +1,10 @@
+/*
+ * CSCE 2014 HW #5
+ * Author: Brandon Russell
+ *
+ * Stores a token that is part of an expression, along with its properties
+*/
+
 #pragma once
 #include <string>
 
