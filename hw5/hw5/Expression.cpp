@@ -7,6 +7,9 @@
 
 #include <iostream>
 #include <stack>
+#include <queue>
+#include <algorithm>
+#include <stdexcept>
 #include "Expression.h"
 
 string typeToString(Exp_type t) {
@@ -98,6 +101,20 @@ void Expression::validate() {
 	}
 }
 
+template<class T>
+T popStack(stack<T> &st) {
+	T val = st.top();
+	st.pop();
+	return val;
+}
+
+template<class T>
+T popQueue(queue<T> &q) {
+	T val = q.front();
+	q.pop();
+	return val;
+}
+
 void Expression::generatePostfix() {
 	stack<Token> opStack;
 
@@ -108,60 +125,50 @@ void Expression::generatePostfix() {
 		else if (t.get_type() == OpenBrace)
 			opStack.push(t);
 		else if (t.get_type() == CloseBrace) {
-			while (opStack.top().get_type() != OpenBrace) {
-				postfix.push_back(opStack.top());
-				opStack.pop();
-			}
-
-			opStack.pop(); // Remove open parenthesis
-		} else {
-			while (opStack.size() != 0 && opStack.top().get_priority() >= t.get_priority()) {
-				postfix.push_back(opStack.top());
-				opStack.pop();
-			}
-
-			opStack.push(t);
-		}
-	}
-
-	while (opStack.size() != 0) {
-		postfix.push_back(opStack.top());
-		opStack.pop();
-	}
-}
-
-// Maybe try re-building the postfix into a fully-parenthesized infix expression
-// then moving the operators to their open parenthesis
-void Expression::generatePrefix() {
-	stack<Token> opStack;
-
-	for (int i = 0; i < tokenized.size(); i++) {
-		Token t = tokenized[i];
-		if (t.get_type() == INT || t.get_type() == ID)
-			opStack.push(t);
-		else if (t.get_type() == OpenBrace)
-			opStack.push(t);
-		else if (t.get_type() == CloseBrace) {
-			while (opStack.top().get_type() != OpenBrace) {
-				prefix.push_back(opStack.top());
-				opStack.pop();
-			}
+			while (!opStack.empty() && opStack.top().get_type() != OpenBrace)
+				postfix.push_back(popStack(opStack));
 
 			opStack.pop(); // Remove open parenthesis
 		} else { // Operator
-			prefix.push_back(t);
+			while (!opStack.empty() && opStack.top().get_type() != OpenBrace && opStack.top().get_priority() >= t.get_priority())
+				postfix.push_back(popStack(opStack));
 
-			while (!opStack.empty() && opStack.top().get_type() == OpenBrace) {
-				prefix.push_back(opStack.top());
-				opStack.pop();
-			}
+			opStack.push(t);
 		}
 	}
 
-	while (opStack.size() != 0) {
-		prefix.push_back(opStack.top());
-		opStack.pop();
+	while (!opStack.empty())
+		postfix.push_back(popStack(opStack));
+}
+
+void Expression::generatePrefix() {
+	queue<Token> q;
+	stack<Token> ops;
+
+	for (int i = (int)tokenized.size() - 1; i >= 0; i--) {
+		Token t = tokenized[i];
+		if (t.get_type() == INT || t.get_type() == ID)
+			q.push(t);
+		else if (t.get_type() == OP) {
+			while (!ops.empty() && ops.top().get_priority() >= t.get_priority() && ops.top().get_type() != CloseBrace)
+				q.push(popStack(ops));
+			ops.push(t);
+		} else if (t.get_type() == CloseBrace)
+			ops.push(t);
+		else if (t.get_type() == OpenBrace) {
+			while (ops.top().get_type() != CloseBrace)
+				q.push(popStack(ops));
+			ops.pop(); // Remove the right bracket
+		}
 	}
+
+	while (!ops.empty())
+		q.push(popStack(ops));
+
+	while (!q.empty())
+		prefix.push_back(popQueue(q));
+
+	reverse(prefix.begin(), prefix.end());
 }
 
 void Expression::set(const string &s) {
@@ -234,13 +241,14 @@ int Expression::evaluate(map<string, int> &vars) {
 		Token token = postfix[i];
 		if (token.get_type() == INT)
 			operands.push(token.value());
-		else if (token.get_type() == ID)
+		else if (token.get_type() == ID) {
+			if (vars.count(token.get_token()) == 0)
+				throw runtime_error("Undefined variable referenced in expression");
+
 			operands.push(vars[token.get_token()]);
-		else {
-			int val1 = operands.top();
-			operands.pop();
-			int val2 = operands.top();
-			operands.pop();
+		} else {
+			int val2 = popStack(operands);
+			int val1 = popStack(operands);
 
 			string op = postfix[i].get_token();
 			if (op == "+")

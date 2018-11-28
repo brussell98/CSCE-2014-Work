@@ -51,7 +51,7 @@ void Token::set(string s) {
 		type = CloseBrace;
 	else if (s == "+" || s == "-" || s == "*" || s == "/" || s == "%") {
 		type = OP;
-		if (s == "+" || s == "-" || s == "%")
+		if (s == "+" || s == "-")
 			priority = 1;
 		else
 			priority = 2;

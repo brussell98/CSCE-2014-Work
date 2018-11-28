@@ -36,10 +36,17 @@ public:
 				cout << exps[i].get_original() << " is not a valid expression" << endl;
 			else if (exps[i].getType() == assignment) {
 				int val = exps[i].evaluate(vars);
-				cout << "Variable " << exps[i].get_tokenized()[0].get_token() << " set to " << val << endl;
+				cout << "Variable \"" << exps[i].get_tokenized()[0].get_token() << "\" set to " << val << endl;
 			} else {
-				int val = exps[i].evaluate(vars);
-				cout << exps[i].get_original() << " = " << val << endl;
+				try {
+					int val = exps[i].evaluate(vars);
+					cout << exps[i].get_original() << " = " << val << endl;
+				} catch (exception &e) {
+					if ((string)e.what() == "Undefined variable referenced in expression")
+					 	cout << exps[i].get_original() << " = undefined (referenced undefined variable)" << endl;
+					else
+						throw e;
+				}
 			}
 		}
 	}
